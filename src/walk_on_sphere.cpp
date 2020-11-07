@@ -2,10 +2,11 @@
 #include <random>
 #include <functional>
 
-#include <find_closest_point.h>
 #include <igl/point_mesh_squared_distance.h>
+#include <igl/AABB.h>
 
-void walk_on_sphere(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, 
+
+void walk_on_sphere(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const igl::AABB<Eigen::MatrixXd, 3> aabb,
 	const std::function<float(Eigen::Vector3d, double, bool)> u_hat, const Eigen::Vector3d &x0, double &u) 
 {
 	const float eps = 1e-6;
@@ -27,16 +28,14 @@ void walk_on_sphere(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
 	u = 0;
 	for (int i = 0; i < n_walks; i++) {
 		double r = std::numeric_limits<double>::max();
-		Eigen::Vector3d x = x0;
+		Eigen::RowVector3d x = x0;
 
 		int itr = 0;
 		while (itr < max_itr && r > eps) {
 			// find closest point on the boundary and change radius
-			// TODO: maybe use BVH?
-			double d;
-			Eigen::Vector3d c;
-			find_closest_point(V, F, x, d, c);
-			 
+			int idx;
+			Eigen::RowVector3d c;
+			double d = aabb.squared_distance(V, F, x, d, idx, c);
 			r = std::min(r, std::sqrt(d));
 			
 			// add to u if needed
