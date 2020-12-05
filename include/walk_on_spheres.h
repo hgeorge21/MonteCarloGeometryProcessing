@@ -2,8 +2,6 @@
 #define WOS_H
 
 #include <Eigen/Core>
-#include <functional>
-#include <igl/AABB.h>
 
 // Solve ∆u = 0 over space at given poinst P subject to B on the given boundary
 // mesh (V,F)
