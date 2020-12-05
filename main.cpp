@@ -11,11 +11,7 @@ int main(int argc, char* argv[]) {
 	// load mesh
 	Eigen::MatrixXd V;
 	Eigen::MatrixXi F;
-	igl::read_triangle_mesh((argc > 1 ? argv[1] : "../data/smthing.obj"), V, F);
-
-	// set up AABB tree
-	igl::AABB<Eigen::MatrixXd, 3> AABB_tree;
-	AABB_tree.init(V, F);
+	igl::read_triangle_mesh((argc > 1 ? argv[1] : "../../../data/bunny.off"), V, F);
 
 	igl::opengl::glfw::Viewer viewer;
 	std::cout << R"()";

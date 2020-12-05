@@ -6,9 +6,12 @@
 #include <igl/AABB.h>
 
 
-void walk_on_sphere(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const igl::AABB<Eigen::MatrixXd, 3> aabb,
-	const std::function<float(Eigen::Vector3d, double, bool)> u_hat, const Eigen::Vector3d &x0, double &u) 
+void walk_on_spheres(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen::VectorXd& B,
+	const Eigen::MatrixXd& P, Eigen::VectorXd& U) 
 {
+	igl::AABB<Eigen::MatrixXd, 3> aabb;
+	aabb.init(V, F);
+
 	const float eps = 1e-6;
 	const int max_itr = 40;
 	const int n_walks = 120;
@@ -17,34 +20,44 @@ void walk_on_sphere(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, const ig
 	std::uniform_real_distribution<double> dist_theta(0., 2 * std::_Pi);
 	std::uniform_real_distribution<double> dist_phi(0., 2 * std::_Pi);
 	
-	auto& get_sphere_vec = [&](const double& theta, const double& phi) {
-		Eigen::Vector3d vec;
-		vec << sin(theta) * cos(phi),
-			sin(theta)* sin(phi),
-			cos(theta);
-		return vec;
+	// get point on a sphere
+	auto& get_pts_on_sphere = [&](const Eigen::VectorXd &R) {
+		Eigen::MatrixXd Vec = Eigen::MatrixXd::Zero(P.rows(), 3);
+
+		for (int k = 0; k < P.rows(); k++) {
+			double theta = dist_theta(generator);
+			double phi = dist_phi(generator);
+
+			Vec.row(k) << sin(theta) * cos(phi), sin(theta)* sin(phi), cos(theta);
+			Vec.row(k) *= R(k);
+		}
+		return Vec;
 	};
 
-	u = 0;
+	U = Eigen::VectorXd::Zero(P.rows());
+	Eigen::MatrixXd X = P;
+
+	// start the random walk
 	for (int i = 0; i < n_walks; i++) {
-		double r = std::numeric_limits<double>::max();
-		Eigen::RowVector3d x = x0;
+		Eigen::VectorXd R = std::numeric_limits<double>::max() * Eigen::VectorXd::Ones(P.rows());
 
 		int itr = 0;
-		while (itr < max_itr && r > eps) {
+		Eigen::VectorXd sqrD;
+		Eigen::VectorXd I;
+		Eigen::MatrixXd C;
+		while (itr < max_itr) {
 			// find closest point on the boundary and change radius
-			int idx;
-			Eigen::RowVector3d c;
-			double d = aabb.squared_distance(V, F, x, d, idx, c);
-			r = std::min(r, std::sqrt(d));
+			aabb.squared_distance(V, F, P, sqrD, I, C);
 			
-			// add to u if needed
-			u += u_hat(x, r, false);
-			
-			x = x + r * get_sphere_vec(dist_theta(generator), dist_phi(generator));
+			R = R.cwiseMin(sqrD);
+			X = X + get_pts_on_sphere(R);
 			itr++;
 		}
-		u += u_hat(x, r, true);
+		for (int j = 0; j < I.rows(); j++) {
+			// interpolate between the three vertices and find value
+			// TODO: use barycentric for now...
+			U(j) += (B(I(j),0)+B(I(j),1)+B(I(j),2)) / 3;
+		}
 	}
-	u = u / n_walks;
+	U = U / n_walks;
 }

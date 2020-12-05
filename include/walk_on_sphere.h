@@ -5,19 +5,22 @@
 #include <functional>
 #include <igl/AABB.h>
 
-// Computes the Monte Carlo estimate for u(x) using Walk-on-Sphere algorithm
-// Solves  Δu = 0 / f at x0.
+// Solve ∆u = 0 over space at given poinst P subject to B on the given boundary
+// mesh (V,F)
 //
 // Inputs:
-//   V:     #V x 3 matrix of vertex coordinates
-//   F:     #F x 3 matrix of faces, each row is indices into V of a triangle
-//   aabb:  AABB tree representation of mesh (V, F)
-//   u_hat: estimation function passing in a point, radius of largest ball, and whether on boundary
-//   x0:    single point to evaluate u at
+//   V  #V by 3 list of surface mesh vertex positions
+//   F  #F by 3 list of triangles 
+//   B  #V by 1 list of Dirichlet boundary conditions
+//   P  #P by 3 list of query positions
 // Outputs:
-//   u：    value of u at points in x0 using WoS
-//
-void walk_on_sphere(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const igl::AABB<Eigen::MatrixXd, 3> aabb,
-	const std::function<float(Eigen::Vector3d, double, bool)> u_hat, const Eigen::Vector3d& x0, double& u);
+//   U  #P by 1 list of values at query positions
+
+void walk_on_spheres(
+	const Eigen::MatrixXd& V,
+	const Eigen::MatrixXi& F,
+	const Eigen::VectorXd& B,
+	const Eigen::MatrixXd& P,
+	Eigen::VectorXd& U);
 
 #endif // !WOS_H
