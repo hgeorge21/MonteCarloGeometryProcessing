@@ -1,5 +1,6 @@
 #include <walk_on_spheres.h>
 #include <pts_on_spheres.h>
+#include <interpolate.h>
 
 #include <igl/point_mesh_squared_distance.h>
 #include <igl/AABB.h>
@@ -35,8 +36,10 @@ void walk_on_spheres(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const E
 		}
 		for (int j = 0; j < I.rows(); j++) {
 			// interpolate between the three vertices and find value
-			// TODO: use barycentric for now...
-			U(j) += (B(I(j),0)+B(I(j),1)+B(I(j),2)) / 3;
+			Eigen::Vector3d phi;
+			interpolate(C.row(j), V.row(F(I(j), 0)), V.row(F(I(j), 1)), V.row(F(I(j), 2)), phi);
+
+			U(j) += phi(0) * B(I(j),0) + phi(1) * B(I(j),1) + phi(2) * B(I(j),2);
 		}
 	}
 	U = U / n_walks;

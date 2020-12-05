@@ -7,7 +7,7 @@ void pts_on_spheres(const Eigen::VectorXd& R, Eigen::MatrixXd& X) {
 	std::uniform_real_distribution<double> dist_phi(0., 2 * std::_Pi);
 
 	for (int k = 0; k < X.rows(); k++) {
-		Eigen::Vector3d vec;
+		Eigen::RowVector3d vec;
 		double theta = dist_theta(generator);
 		double phi = dist_phi(generator);
 
