@@ -3,11 +3,11 @@
 
 void pts_on_spheres(const Eigen::VectorXd& R, Eigen::MatrixXd& X) {
 	std::default_random_engine generator;
-	std::uniform_real_distribution<double> dist_theta(0., std::_Pi);
-	std::uniform_real_distribution<double> dist_phi(0., 2 * std::_Pi);
+	std::uniform_real_distribution<double> dist_theta(0., PI);
+	std::uniform_real_distribution<double> dist_phi(0., 2 * PI);
 
-	auto& sine = [](double x) { return sin(x); };
-	auto& cosine = [](double x) { return cos(x); };
+	const auto& sine = [](double x) { return sin(x); };
+	const auto& cosine = [](double x) { return cos(x); };
 
 	Eigen::VectorXd thetas = Eigen::VectorXd::NullaryExpr(X.rows(), [&]() { return dist_theta(generator); });
 	Eigen::VectorXd phis = Eigen::VectorXd::NullaryExpr(X.rows(), [&]() { return dist_phi(generator); });

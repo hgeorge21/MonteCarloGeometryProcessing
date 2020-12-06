@@ -1,6 +1,8 @@
 ﻿#ifndef POS_H
 #define POS_H
 
+#define PI 3.1415926535897932384626433832795028884L
+
 #include <Eigen/Core>
 
 // Calculates the final position on spheres given radius

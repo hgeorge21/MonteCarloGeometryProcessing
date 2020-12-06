@@ -5,8 +5,6 @@
 #include <igl/AABB.h>
 #include <igl/slice_mask.h>
 
-#include <iostream>
-
 void walk_on_spheres(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen::VectorXd& B,
 	const Eigen::MatrixXd& P, Eigen::VectorXd& U) 
 {
@@ -18,7 +16,6 @@ void walk_on_spheres(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const E
 	const int n_walks = 64;
 
 	U = Eigen::VectorXd::Zero(P.rows());
-	
 	// start the random walk
 	for (int i = 0; i < n_walks; i++) {
 		Eigen::MatrixXd X = P;
