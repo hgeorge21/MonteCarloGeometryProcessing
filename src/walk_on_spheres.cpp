@@ -2,7 +2,6 @@
 #include <pts_on_spheres.h>
 #include <interpolate.h>
 
-#include <igl/point_mesh_squared_distance.h>
 #include <igl/AABB.h>
 
 void walk_on_spheres(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen::VectorXd& B,
@@ -24,7 +23,7 @@ void walk_on_spheres(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const E
 
 		int itr = 0;
 		Eigen::VectorXd sqrD;
-		Eigen::VectorXd I;
+		Eigen::VectorXi I;
 		Eigen::MatrixXd C;
 		while (itr < max_itr) {
 			// find closest point on the boundary and change radius
