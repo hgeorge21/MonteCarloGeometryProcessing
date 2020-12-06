@@ -5,13 +5,17 @@
 
 #include <timer.h>
 #include <random_sampling.h>
-#include <walk_on_spheres.h>
+#include <WoS_Laplacian.h>
+#include <WoS_Poisson.h>
+#include <WoS_gradient.h>
+#include <WoS_Hessian.h>
+#include <WoS_biharmonic.h>
 
 int main(int argc, char* argv[]) {
 	// load mesh
 	Eigen::MatrixXd V;
 	Eigen::MatrixXi F;
-	igl::read_triangle_mesh((argc > 1 ? argv[1] : "../data/bunny.off"), V, F);
+	igl::read_triangle_mesh((argc > 1 ? argv[1] : "../data/cactus.obj"), V, F);
 
 	igl::opengl::glfw::Viewer viewer;
 	const int xid = viewer.selected_data_index;
@@ -45,12 +49,23 @@ int main(int argc, char* argv[]) {
 	std::vector<std::function<double(const Eigen::Vector3d&)>> boundary_funcs;
     boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return x(0); });
     boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return 2 * x.norm(); });
-    boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return 5.; });
+    boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return 1 / x.norm(); });
 
     std::vector<std::string> boundary_strings;
     boundary_strings.emplace_back("g(x) = x_0");
     boundary_strings.emplace_back("g(x) = 2 * ||x||");
-    boundary_strings.emplace_back("g(x) = 5");
+    boundary_strings.emplace_back("g(x) = 1 / ||x||");
+
+    // source functions
+    std::vector<std::function<double(const Eigen::Vector3d&)>> source_terms;
+    source_terms.emplace_back([](const Eigen::Vector3d &x) -> double {
+        double r2 = (x - Eigen::Vector3d(0.5, 0.5, 0.5)).squaredNorm();
+        return 1e4 * std::pow(exp(1.0), -r2);
+    });
+
+    std::vector<std::string> source_strings;
+    source_strings.emplace_back("f(y) = 10.0");
+    // =====================================
 
     const auto &set_boundary = [&](std::function<double(const Eigen::Vector3d&)> g) {
         B.resize(V.rows());
@@ -77,7 +92,10 @@ int main(int argc, char* argv[]) {
 
 	const auto& solve = [&]()
 	{
-		walk_on_spheres(V, F, B, P, U);
+//		WoS_Laplacian(V, F, B, P, U);
+		WoS_Poisson(V, F, B, source_terms[0], P, U);
+//		WoS_gradient(V, F, B, P, U);
+
 		Eigen::MatrixXd CM;
 		igl::colormap(igl::COLOR_MAP_TYPE_MAGMA, U, U.minCoeff(), U.maxCoeff(), CM);
 		viewer.data_list[xid].set_points(P, CM);
