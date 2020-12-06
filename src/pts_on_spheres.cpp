@@ -1,8 +1,10 @@
 #include <pts_on_spheres.h>
+#include <chrono>
 #include <random>
 
 void pts_on_spheres(const Eigen::VectorXd& R, Eigen::MatrixXd& X) {
-	std::default_random_engine generator;
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator(seed);
 	std::uniform_real_distribution<double> dist_theta(0., std::_Pi);
 	std::uniform_real_distribution<double> dist_phi(0., 2 * std::_Pi);
 
