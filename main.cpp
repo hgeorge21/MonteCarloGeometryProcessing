@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
     +       Double the number of sample points
     -       Halve the number of sample points
     R,r     resets the sampled points
-    G,g     changes the
+    G,g     changes the boundary conditions
     )";
 	std::cout << "\n";
 
