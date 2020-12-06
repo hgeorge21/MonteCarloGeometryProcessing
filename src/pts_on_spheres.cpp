@@ -6,14 +6,16 @@ void pts_on_spheres(const Eigen::VectorXd& R, Eigen::MatrixXd& X) {
 	std::uniform_real_distribution<double> dist_theta(0., std::_Pi);
 	std::uniform_real_distribution<double> dist_phi(0., 2 * std::_Pi);
 
-	for (int k = 0; k < X.rows(); k++) {
-		Eigen::RowVector3d vec;
-		double theta = dist_theta(generator);
-		double phi = dist_phi(generator);
+	auto& sine = [](double x) { return sin(x); };
+	auto& cosine = [](double x) { return cos(x); };
 
-		vec << sin(theta) * cos(phi), sin(theta)* sin(phi), cos(theta);
-		vec *= R(k);
+	Eigen::VectorXd thetas = Eigen::VectorXd::NullaryExpr(X.rows(), [&]() { return dist_theta(generator); });
+	Eigen::VectorXd phis = Eigen::VectorXd::NullaryExpr(X.rows(), [&]() { return dist_phi(generator); });
 
-		X.row(k) = X.row(k) + vec;
-	}
+	Eigen::MatrixXd res = Eigen::MatrixXd::Zero(X.rows(), 3);
+	res.col(0) = R.cwiseProduct((thetas.unaryExpr(sine)).cwiseProduct(phis.unaryExpr(cosine)));
+	res.col(1) = R.cwiseProduct((thetas.unaryExpr(sine)).cwiseProduct(phis.unaryExpr(sine)));
+	res.col(2) = R.cwiseProduct((thetas.unaryExpr(cosine)));
+	
+	X = X + res;
 }
