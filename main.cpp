@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
     +       Double the number of sample points
     -       Halve the number of sample points
     R,r     resets the sampled points
-    G,g     changes the boundary conditions
+    G,g     changes the pre-listed boundary conditions
     )";
 	std::cout << "\n";
 
@@ -119,6 +119,8 @@ int main(int argc, char* argv[]) {
 	};
 
 	viewer.data().set_mesh(V, F);
+    set_boundary(boundary_funcs[g_idx]);
+    std::cout << "Boundary condition: " << boundary_strings[g_idx] << "\n";
 	std::cout << "Time used: " << timer(set_points) << " sec\n";
 
 	update();
