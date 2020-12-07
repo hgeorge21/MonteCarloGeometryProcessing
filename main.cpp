@@ -2,7 +2,6 @@
 #include <igl/read_triangle_mesh.h>
 #include <igl/opengl/glfw/Viewer.h>
 #include <igl/colormap.h>
-
 #include <timer.h>
 #include <boundary_setup.h>
 #include <random_sampling.h>
@@ -86,7 +85,7 @@ int main(int argc, char* argv[]) {
             std::cout << "Boundary condition: " << pair.first << "\n";
         }
 
-        igl::colormap(igl::COLOR_MAP_TYPE_MAGMA, V, B.minCoeff(), B.maxCoeff(), BCM);
+        igl::colormap(igl::COLOR_MAP_TYPE_MAGMA, B, B.minCoeff(), B.maxCoeff(), BCM);
         viewer.data_list[yid].set_points(V, BCM);
     };
 
@@ -193,6 +192,16 @@ int main(int argc, char* argv[]) {
             screened_c = (screened_c > 0) ? 0 : 1.;
             if(screened_c > 0.)
                 std::cout << "Screen Poisson c: " << screened_c << "\n";
+            break;
+//        case 'K':
+//        case 'k':
+//            mesh_name
+//            igl::read_triangle_mesh((argc > 1 ? argv[1] : "../data/cactus.obj"), V, F);
+//            viewer.data().set_mesh(V, F);
+//            set_boundary();
+//            set_points();
+//            std::cout << "# Sample points: " << P.rows() << "\n";
+//            break;
 		default:
 			return false;
 		}
