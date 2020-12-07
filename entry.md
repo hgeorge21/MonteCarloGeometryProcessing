@@ -130,7 +130,7 @@ We will do a total of *n_walks* , accumulates the estimated values in **U** for 
 
 Below is the visualization of the values stored in **U**. This visualization used around 270k sample points inside the bunny mesh.
 
-<img src="/images/270k_result.png">
+<img src="/images/270k_result.png" width=300>
 
 Here is a snippet of code of how to use libigl's colormap.
 
@@ -156,13 +156,13 @@ Notice that we introduced another source term <img src="\images\pos_f.png" style
 
 According to the paper, we only need to generalize the mean value property and we would obtain the solution value by:
 
-<img src="images/uxpoisson.png">
+<img src="/images/uxpoisson.png">
 
 where *G(x, y)* is the harmonic Green’s function on the ball *B(x)*.
 
 Thus, the WoS estimator becomes:
 
-<img src="images/poissonesti.png">
+<img src="/images/poissonesti.png">
 
 Notice that this means other parts of the WoS stays the same except each time:
 1.  a sample point *y_k* is drawn from the largest solid ball *B(x_k)*. (uniformly)
