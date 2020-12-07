@@ -11,7 +11,6 @@
 //   func function to time
 // Output:
 //   total_time time to run the function
-
 double timer(std::function<void(void)> func);
 
 #endif //TIMER_H

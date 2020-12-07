@@ -14,5 +14,11 @@
 // Output:
 //   phi: the coefficients for linear combination
 
-void interpolate(const Eigen::Vector3d& X, const Eigen::Vector3d& X0, const Eigen::Vector3d& X1, const Eigen::Vector3d& X2, Eigen::Vector3d& phi);
+void interpolate(
+        const Eigen::Vector3d& X,
+        const Eigen::Vector3d& X0,
+        const Eigen::Vector3d& X1,
+        const Eigen::Vector3d& X2,
+        Eigen::Vector3d& phi);
+
 #endif // !INTERPOLATE_H

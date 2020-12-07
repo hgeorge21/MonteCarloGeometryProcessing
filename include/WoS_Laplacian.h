@@ -3,7 +3,7 @@
 
 #include <Eigen/Core>
 
-// Solve ∆u = 0 over space at given poinst P subject to B on the given boundary
+// Solve ∆u = 0 over space at given points P subject to B on the given boundary
 // mesh (V,F)
 //
 // Inputs:
@@ -13,7 +13,6 @@
 //   P  #P by 3 list of query positions
 // Outputs:
 //   U  #P by 1 list of values at query positions
-
 void WoS_Laplacian(
 	const Eigen::MatrixXd& V,
 	const Eigen::MatrixXi& F,

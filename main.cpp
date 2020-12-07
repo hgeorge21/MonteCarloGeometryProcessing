@@ -35,12 +35,12 @@ int main(int argc, char* argv[]) {
     )";
 	std::cout << "\n";
 
-    // source functions and point for Poisson
-	// Compute the source point, center of bounding box
-	const Eigen::Vector3d source_point = Eigen::Vector3d(0.5, 0.5, 0.5);
+    // source term and point source for Poisson
+	// Compute the point source, center of bounding box
+	const Eigen::Vector3d point_source = Eigen::Vector3d(0.5, 0.5, 0.5);
     std::vector<std::function<double(const Eigen::Vector3d&)>> source_terms;
     source_terms.emplace_back([&](const Eigen::Vector3d &x) -> double {
-        double r2 = (x - source_point).squaredNorm();
+        double r2 = (x - point_source).squaredNorm();
         return 1e4 * std::pow(exp(1.0), -r2);
     });
     std::vector<std::string> source_strings;
@@ -51,10 +51,10 @@ int main(int argc, char* argv[]) {
     int boundary_id = 0;
     int solver_id = 0;
     bool show_boundary = true;
-    bool use_source_pt = true;
+    bool use_pt_source = true;
 
     std::vector<std::pair<std::string, std::pair<void *(*)(void *), std::vector<f_pairs>>>> solver_funcs;
-    boundary_setup(source_point, solver_funcs);
+    boundary_setup(point_source, solver_funcs);
 
     double solve_time;
     Eigen::MatrixXd P;
@@ -107,9 +107,9 @@ int main(int argc, char* argv[]) {
 	    if(pair.first == "Laplacian") {
             WoS_Laplacian(V, F, B, P, U);
 	    } else if(pair.first == "Poisson") {
-            WoS_Poisson(V, F, B, source_terms[0], use_source_pt, source_point, P, U);
+            WoS_Poisson(V, F, B, source_terms[0], use_pt_source, point_source, P, U);
 	    } else if(pair.first == "biharmonic") {
-            WoS_biharmonic(V, F, B, Bh, use_source_pt, source_point, P, U);
+            WoS_biharmonic(V, F, B, Bh, use_pt_source, point_source, P, U);
 	    }
 
 		Eigen::MatrixXd CM;
@@ -156,8 +156,8 @@ int main(int argc, char* argv[]) {
         case 'o':
             solver_id = (solver_id + 1) % solver_funcs.size();
             std::cout << "Changed to solver: " << solver_funcs[solver_id].first << "\n";
-            if(solver_funcs[solver_id].first != "Laplacian" && use_source_pt)
-                std::cout << "Source point: " << source_point.transpose() << "\n";
+            if(solver_funcs[solver_id].first != "Laplacian" && use_pt_source)
+                std::cout << "Source point: " << point_source.transpose() << "\n";
             boundary_id = 0;
             set_boundary();
 		case 'R':
@@ -166,8 +166,8 @@ int main(int argc, char* argv[]) {
 			break;
         case 'Q':
         case 'q':
-            use_source_pt = !use_source_pt;
-            std::cout << (use_source_pt ? "Enabled " : "Disabled ") << "source point\n";
+            use_pt_source = !use_pt_source;
+            std::cout << (use_pt_source ? "Enabled " : "Disabled ") << "source point\n";
 		default:
 			return false;
 		}

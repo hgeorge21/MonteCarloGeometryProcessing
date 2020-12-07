@@ -8,8 +8,8 @@
 
 
 void WoS_biharmonic(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F,
-                    const Eigen::VectorXd& Bh, const Eigen::VectorXd& Bg,
-                    const bool &use_src_pt, const Eigen::RowVector3d& source_point,
+                    const Eigen::VectorXd& Bg, const Eigen::VectorXd& Bh,
+                    const bool &use_pt_src, const Eigen::RowVector3d& point_source,
                     const Eigen::MatrixXd& P, Eigen::VectorXd& U) {
     igl::AABB<Eigen::MatrixXd, 3> aabb;
     aabb.init(V, F);
@@ -50,8 +50,6 @@ void WoS_biharmonic(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F,
     // ================
 
     // start the random walk
-    // ∆u = v on Ω, u = g on ∂Ω
-    // ∆v = 0 on Ω, v = h on ∂Ω
     for (int i = 0; i < n_walks; i++) {
         X = P;
         int itr = 0;
@@ -61,8 +59,8 @@ void WoS_biharmonic(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F,
             R = DX.cwiseSqrt();
 
             // walk y once
-            if(use_src_pt)
-                sample_in_spheres(X, R, source_point, Y);
+            if(use_pt_src)
+                sample_in_spheres(X, R, point_source, Y);
             else
                 sample_in_spheres(X, R, Y);
             aabb.squared_distance(V, F, Y, DY, IY, CY);
