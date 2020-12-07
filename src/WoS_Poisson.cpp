@@ -40,7 +40,6 @@ void WoS_Poisson(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen
     Eigen::MatrixXd Y;
     Eigen::VectorXd G;
 
-    // TODO: test the screened Poisson --> BUG!!
     // start the random walks
     for (int i = 0; i < n_walks; i++) {
         X = P;
@@ -60,7 +59,7 @@ void WoS_Poisson(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen
 
             // volume and Green's function
             vols = R.unaryExpr([](double r)->double{ return 4.*PI/3*pow(r, 3); });
-            Greens_function(X, Y, R, 0, (c == 0.) ? HARMONIC : YUKAWA, G);
+            Greens_function(X, Y, R, c, (c == 0.) ? HARMONIC : YUKAWA, G);
 
             // source term (using Dirac delta)
             for(int k = 0; k < Y.rows(); k++)

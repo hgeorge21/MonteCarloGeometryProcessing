@@ -4,6 +4,7 @@
 void Greens_function(const Eigen::MatrixXd& X, const Eigen::MatrixXd& Y, const Eigen::VectorXd& R,
                      const double &c, GREEN_FUNC_TYPE type, Eigen::VectorXd &G) {
     Eigen::VectorXd r = (Y - X).rowwise().norm();
+
     if(type == HARMONIC) {
         G = 1. / (4 * PI) * (R - r).cwiseQuotient(R.cwiseProduct(r));
     } else if(type == YUKAWA) {

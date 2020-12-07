@@ -200,7 +200,7 @@ int main(int argc, char* argv[]) {
         case 'c':
             if(solver_funcs[solver_id].first == "Poisson") {
                 screened_c /= 2;
-                std::cout << "Screen Poisson c: " << screened_c << "\n";
+                std::cout << "Screened Poisson c: " << screened_c << "\n";
             }
             break;
         case 'X':
@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
             std::cout << ((screened_c > 0) ? "Turned off " : "Turned on ") << "Screened Poisson\n";
             screened_c = (screened_c > 0) ? 0 : 1.;
             if(screened_c > 0.)
-                std::cout << "Screen Poisson c: " << screened_c << "\n";
+                std::cout << "Screened Poisson c: " << screened_c << "\n";
             break;
 		default:
 			return false;
