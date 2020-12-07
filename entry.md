@@ -33,11 +33,11 @@ From here, we can develop the algorithm of Walk On Sphere (WoS). Below is the eq
 ![lapesti](/images/lapesti.png)
 
 We keep taking point on the sphere until we are very close to the boundary and we can take the boundary value. As the illustration (taken from the paper) below.
-<img src="/images/wos_algo.png" width="400">
+<img src="/images/wos_algo.PNG" width="400">
 
 If do multiple (N) walks and average over the results, we can get our final Monte Carlo estimatation:
 
-![mceq](/images/avgWos.PNG)
+![mceq](/images/avgWos.png)
 ### Key Steps
 
 #### Random Sampling Inside Mesh
