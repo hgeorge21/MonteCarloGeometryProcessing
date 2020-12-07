@@ -33,12 +33,12 @@ From here, we can develop the algorithm of Walk On Sphere (WoS). Below is the eq
 ![lapesti](/images/lapesti.png)
 
 We keep taking point on the sphere until we are very close to the boundary and we can take the boundary value. As the illustration (taken from the paper) below.
-<img src="images/wos_algo.png" width="300">
+
+<img src="/images/wos_algo.PNG" width="400">
 
 If do multiple (N) walks and average over the results, we can get our final Monte Carlo estimatation:
 
 ![mceq](/images/avgWos.png)
-
 ### Key Steps
 
 #### Random Sampling Inside Mesh
@@ -50,7 +50,7 @@ First, we find the bounding box of the mesh object by taking the colwise maximum
 
 We generates a list of random query points (*Q*) inside the bounding box , and then we discard all points outside the query model.
 
-<img src="\images\bounding_points.png" width=500> 
+<img src="/images/bounding_points.PNG" width=500> 
 
 This can be done using fast winding numbers for triangle soups. As libigl tutorial instructed, it can be done as follows:
 
@@ -130,7 +130,7 @@ We will do a total of *n_walks* , accumulates the estimated values in **U** for 
 
 Below is the visualization of the values stored in **U**. This visualization used around 270k sample points inside the bunny mesh.
 
-<img src="\images\270k_result.png">
+<img src="/images/270k_result.png" width=500>
 
 Here is a snippet of code of how to use libigl's colormap.
 
@@ -148,21 +148,21 @@ Beyond WoS estimator for Laplace equation as required, we tried to implement WoS
 
 The Poisson equation is very similar to Laplacian :
 
-<img src="\images\render_pos.png">
+<img src="/images/render_pos.png">
 
 where Omega is just domain of interest.
 
-Notice that we introduced another source term <img src="\images\pos_f.png" style="margin:0px 5px">. 
+Notice that we introduced another source term <img src="/images/pos_f.png" style="margin:0px 5px">. 
 
 According to the paper, we only need to generalize the mean value property and we would obtain the solution value by:
 
-<img src="images/uxpoisson.png">
+<img src="/images/uxpoisson.png">
 
 where *G(x, y)* is the harmonic Green’s function on the ball *B(x)*.
 
 Thus, the WoS estimator becomes:
 
-<img src="images/poissonesti.png">
+<img src="/images/poissonesti.png">
 
 Notice that this means other parts of the WoS stays the same except each time:
 1.  a sample point *y_k* is drawn from the largest solid ball *B(x_k)*. (uniformly)
@@ -201,7 +201,7 @@ while (!end_condition) {
 
 According to the paper, we can rewarite the standard Biharmonic Equation to:
 
-<img src="\images\bihar.png">
+<img src="/images/bihar.png">
 
 Then the WoS estimator of this becomes simple. 
 We can use our Poisson estimator described from previous section, and the Laplace estimator to estimate *v(x_k)* at each iteration of the walk.
