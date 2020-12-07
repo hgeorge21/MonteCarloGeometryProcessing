@@ -152,7 +152,7 @@ The Poisson equation is very similar to Laplacian :
 
 where Omega is just domain of interest.
 
-Notice that we introduced another source term <img src="\images\pos_f.png" style="margin:0px 5px">. 
+Notice that we introduced another source term <img src="/images/pos_f.png" style="margin:0px 5px">. 
 
 According to the paper, we only need to generalize the mean value property and we would obtain the solution value by:
 
