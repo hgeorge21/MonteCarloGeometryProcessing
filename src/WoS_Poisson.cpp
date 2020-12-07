@@ -21,7 +21,7 @@ void WoS_Poisson(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen
     Eigen::VectorXd D;
     Eigen::VectorXd R;
     Eigen::VectorXi I;
-    Eigen::VectorXd CC;
+    Eigen::VectorXd CC; // multiplier for screened poisson
     Eigen::VectorXd CR;
     U = Eigen::VectorXd::Zero(P.rows());
 
@@ -31,42 +31,46 @@ void WoS_Poisson(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen
             // interpolate between the three vertices and find value
             int f = I_(j);
             interpolate(C.row(j), V.row(F(f, 0)), V.row(F(f, 1)), V.row(F(f, 2)), phi);
-            U(j) += (c == 0 ? 1.0 : CC(j)) * phi(0) * B(F(f, 0)) + phi(1) * B(F(f, 1)) + phi(2) * B(F(f, 2));
+            U(j) += CR(j) * phi(0) * B(F(f, 0)) + phi(1) * B(F(f, 1)) + phi(2) * B(F(f, 2));
         }
     };
 
-    // additional parts
     Eigen::VectorXd vols = Eigen::VectorXd::Zero(P.rows());
     Eigen::VectorXd Y_res = Eigen::VectorXd::Zero(P.rows());
     Eigen::MatrixXd Y;
     Eigen::VectorXd G;
-    // ================
 
     // TODO: test the screened Poisson --> BUG!!
-    // start the random walk
+    // start the random walks
     for (int i = 0; i < n_walks; i++) {
         X = P;
         CC = Eigen::VectorXd::Ones(P.rows());
-        if(c > 0)
-            CR = CC;
+        CR = CC;
 
         int itr = 0;
         while (itr < max_itr) {
-            // find closest point on the boundary and change radius
             aabb.squared_distance(V, F, X, D, I, C);
             R = D.cwiseSqrt();
 
+            // importance sampling with point source
             if(use_pt_src)
                 sample_in_spheres(X, R, point_source, Y);
             else
                 sample_in_spheres(X, R, Y);
+
+            // volume and Green's function
             vols = R.unaryExpr([](double r)->double{ return 4.*PI/3*pow(r, 3); });
             Greens_function(X, Y, R, 0, (c == 0.) ? HARMONIC : YUKAWA, G);
 
+            // source term (using Dirac delta)
             for(int k = 0; k < Y.rows(); k++)
                 Y_res(k) = f(Y.row(k));
-            U = U + CC.cwiseProduct(vols.cwiseProduct(Y_res).cwiseProduct(G));
-            if(c > 0) {
+
+            // updates U based on if screend or not
+            if (c == 0) {
+                U = U + CC.cwiseProduct(vols.cwiseProduct(Y_res).cwiseProduct(G));
+            } else {
+                U = U + CC.cwiseProduct(vols.cwiseProduct(Y_res).cwiseProduct(G));
                 CC = (sqrt(c) * R).unaryExpr([](double x) { return x / sinh(x); });
                 CR = CC.cwiseProduct(CR);
             }

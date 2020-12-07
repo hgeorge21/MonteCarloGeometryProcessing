@@ -16,6 +16,7 @@ void sample_on_spheres(const Eigen::VectorXd& R, Eigen::MatrixXd& X) {
 	Eigen::VectorXd theta = Eigen::VectorXd::NullaryExpr(X.rows(), [&]() { return dist_theta(generator); });
 	Eigen::VectorXd u = Eigen::VectorXd::NullaryExpr(X.rows(), [&]() { return dist_u(generator); });
 
+	// This sampling ensures uniform distribution on sphere
 	Eigen::MatrixXd res = Eigen::MatrixXd::Zero(X.rows(), 3);
 	res.col(0) = R.cwiseProduct((u.unaryExpr(smthng)).cwiseProduct(theta.unaryExpr(cosine)));
 	res.col(1) = R.cwiseProduct((u.unaryExpr(smthng)).cwiseProduct(theta.unaryExpr(sine)));

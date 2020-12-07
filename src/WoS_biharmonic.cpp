@@ -42,22 +42,20 @@ void WoS_biharmonic(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F,
         }
     };
 
-    // additional parts
     Eigen::VectorXd vols = Eigen::VectorXd::Zero(P.rows());
     Eigen::VectorXd res = Eigen::VectorXd::Zero(P.rows());
     Eigen::VectorXd G;
-    // ================
 
     // start the random walk
     for (int i = 0; i < n_walks; i++) {
         X = P;
         int itr = 0;
         while (itr < max_itr) {
-            // find closest point on the boundary and change radius
+            // find closest point on the boundary and compute radius
             aabb.squared_distance(V, F, X, DX, IX, CX);
             R = DX.cwiseSqrt();
 
-            // walk y once
+            // inner walk of y, only once
             if(use_pt_src)
                 sample_in_spheres(X, R, point_source, Y);
             else
@@ -65,10 +63,13 @@ void WoS_biharmonic(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F,
             aabb.squared_distance(V, F, Y, DY, IY, CY);
             handle_boundary_pts(Bh, CY, IY, W);
 
+            // compute volume and Green's function
             vols = R.unaryExpr([](double r)->double{ return 4.*PI/3*pow(r, 3); });
             Greens_function(X, Y, R, 0, HARMONIC, G);
 
+            // uses W from walking y as source term
             U = U + vols.cwiseProduct(W).cwiseProduct(G);
+
             sample_on_spheres(R, X);
             itr++;
         }

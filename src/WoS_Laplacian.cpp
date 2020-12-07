@@ -30,18 +30,16 @@ void WoS_Laplacian(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eig
         }
     };
 
-	// start the random walk
+	// start the random walks
 	for (int i = 0; i < n_walks; i++) {
 		X = P;
         int itr = 0;
 		while (itr < max_itr) {
-			// find closest point on the boundary and change radius
 			aabb.squared_distance(V, F, X, D, I, C);
             R = D.cwiseSqrt();
 			sample_on_spheres(R, X);
 			itr++;
 		}
-		// handle the rest of the points
 		handle_done_pts(I);
 	}
 	U = U / n_walks;

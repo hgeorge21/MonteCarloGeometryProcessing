@@ -18,6 +18,7 @@ void sample_in_spheres(const Eigen::MatrixXd& X, const Eigen::VectorXd& R, Eigen
     Eigen::VectorXd r     = Eigen::VectorXd::NullaryExpr(X.rows(), [&]() { return std::cbrt(dist_u(generator)); });
     r = R.cwiseProduct(r);
 
+    // This sampling ensures uniform distribution within sphere
     Eigen::MatrixXd res = Eigen::MatrixXd::Zero(X.rows(), 3);
     res.col(0) = r.cwiseProduct((theta.unaryExpr(sine)).cwiseProduct(phi.unaryExpr(cosine)));
     res.col(1) = r.cwiseProduct((theta.unaryExpr(sine)).cwiseProduct(phi.unaryExpr(sine)));

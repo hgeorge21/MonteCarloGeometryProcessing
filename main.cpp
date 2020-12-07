@@ -2,6 +2,7 @@
 #include <igl/read_triangle_mesh.h>
 #include <igl/opengl/glfw/Viewer.h>
 #include <igl/colormap.h>
+
 #include <timer.h>
 #include <boundary_setup.h>
 #include <random_sampling.h>
@@ -13,7 +14,7 @@ int main(int argc, char* argv[]) {
 	// load mesh
 	Eigen::MatrixXd V;
 	Eigen::MatrixXi F;
-	igl::read_triangle_mesh((argc > 1 ? argv[1] : "../data/cactus.obj"), V, F);
+	igl::read_triangle_mesh((argc > 1 ? argv[1] : "../../../data/cactus.obj"), V, F);
 
 	igl::opengl::glfw::Viewer viewer;
 	const int xid = viewer.selected_data_index;
@@ -55,8 +56,10 @@ int main(int argc, char* argv[]) {
     double screened_c = 0;
     bool show_boundary = true;
     bool use_pt_source = true;
+    igl::ColorMapType cmap_type = igl::COLOR_MAP_TYPE_MAGMA;
 
-    std::vector<std::pair<std::string, std::pair<void *(*)(void *), std::vector<f_pairs>>>> solver_funcs;
+    // sets up the built-in PDE and boundary conditions
+    std::vector<std::pair<std::string, std::vector<f_pairs>>> solver_funcs;
     boundary_setup(point_source, solver_funcs);
 
     double solve_time;
@@ -66,13 +69,13 @@ int main(int argc, char* argv[]) {
     Eigen::VectorXd Bh = Eigen::VectorXd::Zero(V.rows()); // for Biharmonic only
     Eigen::MatrixXd BCM;
 
-    // helper functions
+    // compute and show the current boundary
     const auto &set_boundary = [&]() {
-        auto &pair = solver_funcs[solver_id].second.second[boundary_id];
+        auto &pair = solver_funcs[solver_id].second[boundary_id];
         const auto &g = pair.second;
 
         if(solver_funcs[solver_id].first == "biharmonic") {
-            auto &pair2 = solver_funcs[solver_id].second.second[boundary_id+1];
+            auto &pair2 = solver_funcs[solver_id].second[boundary_id+1];
             const auto &h = pair2.second;
             for (int i = 0; i < V.rows(); i++) {
                 B(i) = g(V.row(i).transpose());
@@ -85,10 +88,11 @@ int main(int argc, char* argv[]) {
             std::cout << "Boundary condition: " << pair.first << "\n";
         }
 
-        igl::colormap(igl::COLOR_MAP_TYPE_MAGMA, B, B.minCoeff(), B.maxCoeff(), BCM);
+        igl::colormap(cmap_type, B, B.minCoeff(), B.maxCoeff(), BCM);
         viewer.data_list[yid].set_points(V, BCM);
     };
 
+    // shows the boundary
     const auto& show_bndry_pts = [&]()
     {
         if (show_boundary)
@@ -97,13 +101,19 @@ int main(int argc, char* argv[]) {
             viewer.data_list[yid].clear_points();
     };
 
+    // resample and set the data points
 	const auto& set_points = [&]()
 	{
 		random_sampling(V, F, n_samples, P);
         const Eigen::RowVector3d orange(1.0, 0.7, 0.2);
         viewer.data_list[xid].set_points(P, (1. - (1. - orange.array()) * .8));
+
+        igl::colormap(cmap_type, B, B.minCoeff(), B.maxCoeff(), BCM);
+        if(show_boundary)
+            viewer.data_list[yid].set_points(V, BCM);
 	};
 
+    // solve the equation and set the color map for sampled points, re-adjust the boundary color map as well
 	const auto& solve = [&]()
 	{
 	    auto &pair = solver_funcs[solver_id];
@@ -115,9 +125,16 @@ int main(int argc, char* argv[]) {
             WoS_biharmonic(V, F, B, Bh, use_pt_source, point_source, P, U);
 	    }
 
+        double min_scale = std::min(U.minCoeff(), B.minCoeff());
+        double max_scale = std::max(U.maxCoeff(), B.maxCoeff());
+
 		Eigen::MatrixXd CM;
-		igl::colormap(igl::COLOR_MAP_TYPE_MAGMA, U, U.minCoeff(), U.maxCoeff(), CM);
+		igl::colormap(cmap_type, U, min_scale, max_scale, CM);
 		viewer.data_list[xid].set_points(P, CM);
+
+        igl::colormap(cmap_type, B, min_scale, max_scale, BCM);
+        if (show_boundary)
+            viewer.data_list[yid].set_points(V, BCM);
 	};
 
 	// updates
@@ -152,7 +169,7 @@ int main(int argc, char* argv[]) {
 			break;
         case 'G':
         case 'g':
-            boundary_id = (boundary_id + 1) % solver_funcs[solver_id].second.second.size();
+            boundary_id = (boundary_id + 1) % solver_funcs[solver_id].second.size();
             set_boundary();
             break;
         case 'M':
@@ -160,7 +177,7 @@ int main(int argc, char* argv[]) {
             solver_id = (solver_id + 1) % solver_funcs.size();
             std::cout << "\nChanged to solver: " << solver_funcs[solver_id].first << "\n";
             if(solver_funcs[solver_id].first != "Laplacian" && use_pt_source)
-                std::cout << "Source point: " << point_source.transpose() << "\n";
+                std::cout << "Point source: ON at (" << point_source.transpose() << ")\n";
             if(solver_funcs[solver_id].first == "Poisson" && screened_c > 0)
                 std::cout << "Screened Poisson c: " << screened_c << "\n";
             boundary_id = 0;
@@ -172,7 +189,7 @@ int main(int argc, char* argv[]) {
         case 'Q':
         case 'q':
             use_pt_source = !use_pt_source;
-            std::cout << (use_pt_source ? "Enabled " : "Disabled ") << "source point\n";
+            std::cout << (use_pt_source ? "Enabled " : "Disabled ") << "point source at (" << point_source.transpose() << ")\n";
             break;
         case 'C':
             if(solver_funcs[solver_id].first == "Poisson") {
@@ -193,15 +210,6 @@ int main(int argc, char* argv[]) {
             if(screened_c > 0.)
                 std::cout << "Screen Poisson c: " << screened_c << "\n";
             break;
-//        case 'K':
-//        case 'k':
-//            mesh_name
-//            igl::read_triangle_mesh((argc > 1 ? argv[1] : "../data/cactus.obj"), V, F);
-//            viewer.data().set_mesh(V, F);
-//            set_boundary();
-//            set_points();
-//            std::cout << "# Sample points: " << P.rows() << "\n";
-//            break;
 		default:
 			return false;
 		}
@@ -209,6 +217,7 @@ int main(int argc, char* argv[]) {
 		return true;
 	};
 
+    // start the viewer and set the mesh
 	viewer.data().set_mesh(V, F);
     std::cout << "Changed to solver: " << solver_funcs[solver_id].first << "\n";
     set_boundary();
