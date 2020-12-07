@@ -24,14 +24,17 @@ int main(int argc, char* argv[]) {
     viewer.data().point_size = 5;
 
 	std::cout << R"(
-    [space] Solves the PDE with current sampled points
-    H,h     Hide boundary points
-    S,s     Show boundary points
-    +       Double the number of sample points
-    -       Halve the number of sample points
-    R,r     Resets the sampled points
-    G,g     Changes the pre-listed boundary conditions
-    O,o     Changes the WoS solver (Laplacian, Poisson, biharmonic)
+  [space] Solves the PDE with current sampled points
+  H,h     Hide boundary points
+  S,s     Show boundary points
+  +       Double the number of sample points
+  -       Halve the number of sample points
+  R,r     Resets the sampled points
+  G,g     Changes the pre-listed boundary conditions
+  M,m     Changes the WoS solver (Laplacian, Poisson, biharmonic)
+  C       Double the constant c for Screened Poisson
+  c       Halve the constant c for Screened Poisson
+  X,x     Switch between regular Poisson and Screened Poisson
     )";
 	std::cout << "\n";
 
@@ -50,6 +53,7 @@ int main(int argc, char* argv[]) {
     int n_samples = 1048576;
     int boundary_id = 0;
     int solver_id = 0;
+    double screened_c = 0;
     bool show_boundary = true;
     bool use_pt_source = true;
 
@@ -107,7 +111,7 @@ int main(int argc, char* argv[]) {
 	    if(pair.first == "Laplacian") {
             WoS_Laplacian(V, F, B, P, U);
 	    } else if(pair.first == "Poisson") {
-            WoS_Poisson(V, F, B, source_terms[0], use_pt_source, point_source, P, U);
+            WoS_Poisson(V, F, B, source_terms[0], screened_c, use_pt_source, point_source, P, U);
 	    } else if(pair.first == "biharmonic") {
             WoS_biharmonic(V, F, B, Bh, use_pt_source, point_source, P, U);
 	    }
@@ -152,12 +156,14 @@ int main(int argc, char* argv[]) {
             boundary_id = (boundary_id + 1) % solver_funcs[solver_id].second.second.size();
             set_boundary();
             break;
-        case 'O':
-        case 'o':
+        case 'M':
+        case 'm':
             solver_id = (solver_id + 1) % solver_funcs.size();
-            std::cout << "Changed to solver: " << solver_funcs[solver_id].first << "\n";
+            std::cout << "\nChanged to solver: " << solver_funcs[solver_id].first << "\n";
             if(solver_funcs[solver_id].first != "Laplacian" && use_pt_source)
                 std::cout << "Source point: " << point_source.transpose() << "\n";
+            if(solver_funcs[solver_id].first == "Poisson" && screened_c > 0)
+                std::cout << "Screened Poisson c: " << screened_c << "\n";
             boundary_id = 0;
             set_boundary();
 		case 'R':
@@ -168,6 +174,25 @@ int main(int argc, char* argv[]) {
         case 'q':
             use_pt_source = !use_pt_source;
             std::cout << (use_pt_source ? "Enabled " : "Disabled ") << "source point\n";
+            break;
+        case 'C':
+            if(solver_funcs[solver_id].first == "Poisson") {
+                screened_c *= 2;
+                std::cout << "Screened Poisson c: " << screened_c << "\n";
+            }
+            break;
+        case 'c':
+            if(solver_funcs[solver_id].first == "Poisson") {
+                screened_c /= 2;
+                std::cout << "Screen Poisson c: " << screened_c << "\n";
+            }
+            break;
+        case 'X':
+        case 'x':
+            std::cout << ((screened_c > 0) ? "Turned off " : "Turned on ") << "Screened Poisson\n";
+            screened_c = (screened_c > 0) ? 0 : 1.;
+            if(screened_c > 0.)
+                std::cout << "Screen Poisson c: " << screened_c << "\n";
 		default:
 			return false;
 		}
