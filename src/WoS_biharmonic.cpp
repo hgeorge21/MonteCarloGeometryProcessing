@@ -6,7 +6,6 @@
 
 #include <igl/AABB.h>
 
-
 void WoS_biharmonic(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F,
                     const Eigen::VectorXd& Bg, const Eigen::VectorXd& Bh,
                     const bool &use_pt_src, const Eigen::RowVector3d& point_source,

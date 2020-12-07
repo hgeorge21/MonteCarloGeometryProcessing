@@ -23,11 +23,11 @@ void boundary_setup(
                            [](const Eigen::Vector3d &x) -> double { return 2 * x.norm(); }));
     std::vector<f_pairs> Poisson_boundary_funcs;
     Poisson_boundary_funcs.emplace_back(
-            std::make_pair("g(x) = 1 / ||x - (pt_src)||",
+            std::make_pair("g(x) = 1 / ||x - (source_point)||",
                            [&](const Eigen::Vector3d &x) -> double { return 1 / (x - source_point).norm(); }));
     std::vector<f_pairs> biharmonic_boundary_funcs;
     biharmonic_boundary_funcs.emplace_back(
-            std::make_pair("g(x) = 1 / ||x - (pt_src)||",
+            std::make_pair("g(x) = 1 / ||x - (source_point)||",
                            [&](const Eigen::Vector3d &x) -> double { return 1 / (x - source_point).norm(); }));
     biharmonic_boundary_funcs.emplace_back(
             std::make_pair("h(x) = x_0",
