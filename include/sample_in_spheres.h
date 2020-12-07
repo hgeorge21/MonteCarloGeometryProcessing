@@ -18,4 +18,10 @@ void sample_in_spheres(
         const Eigen::VectorXd& R,
         Eigen::MatrixXd& Y);
 
+void sample_in_spheres(
+        const Eigen::MatrixXd& X,
+        const Eigen::VectorXd& R,
+        const Eigen::RowVector3d &point_source,
+        Eigen::MatrixXd& Y);
+
 #endif //SAMPLE_IN_SPHERES_H

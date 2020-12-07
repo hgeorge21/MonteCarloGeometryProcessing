@@ -47,16 +47,16 @@ int main(int argc, char* argv[]) {
 	// TODO: add a few more boundary conditions
 	int g_idx = 0;
 	std::vector<std::function<double(const Eigen::Vector3d&)>> boundary_funcs;
+    boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return 1 / (x-Eigen::Vector3d(0.5, 0.5, 0.5)).norm(); });
     boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return x(0); });
     boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return 2 * x.norm(); });
-    boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return 1 / x.norm(); });
 
     std::vector<std::string> boundary_strings;
+    boundary_strings.emplace_back("g(x) = 1 / ||x - (pt_src)||");
     boundary_strings.emplace_back("g(x) = x_0");
     boundary_strings.emplace_back("g(x) = 2 * ||x||");
-    boundary_strings.emplace_back("g(x) = 1 / ||x||");
 
-    // source functions
+    // source functions for Poisson
     std::vector<std::function<double(const Eigen::Vector3d&)>> source_terms;
     source_terms.emplace_back([](const Eigen::Vector3d &x) -> double {
         double r2 = (x - Eigen::Vector3d(0.5, 0.5, 0.5)).squaredNorm();
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
     });
 
     std::vector<std::string> source_strings;
-    source_strings.emplace_back("f(y) = 10.0");
+    source_strings.emplace_back("f(y) = Dirac delta");
     // =====================================
 
     const auto &set_boundary = [&](std::function<double(const Eigen::Vector3d&)> g) {
@@ -94,7 +94,8 @@ int main(int argc, char* argv[]) {
 	{
 //		WoS_Laplacian(V, F, B, P, U);
 		WoS_Poisson(V, F, B, source_terms[0], P, U);
-//		WoS_gradient(V, F, B, P, U);
+        WoS_biharmonic(V, F, B, source_terms[0], P, U);
+
 
 		Eigen::MatrixXd CM;
 		igl::colormap(igl::COLOR_MAP_TYPE_MAGMA, U, U.minCoeff(), U.maxCoeff(), CM);

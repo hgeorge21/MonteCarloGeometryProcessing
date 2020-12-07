@@ -2,8 +2,6 @@
 #include <random>
 #include <chrono>
 
-#include <iostream>
-
 void sample_in_spheres(const Eigen::MatrixXd& X, const Eigen::VectorXd& R, Eigen::MatrixXd& Y) {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
@@ -27,3 +25,14 @@ void sample_in_spheres(const Eigen::MatrixXd& X, const Eigen::VectorXd& R, Eigen
 
     Y = X + res;
 }
+
+
+void sample_in_spheres(const Eigen::MatrixXd& X, const Eigen::VectorXd& R, const Eigen::RowVector3d &point_source,
+                       Eigen::MatrixXd& Y) {
+    sample_in_spheres(X, R, Y);
+    for(int i = 0; i < X.rows(); i++) {
+        if((point_source - X.row(i)).norm() < R(i))
+            Y.row(i) = point_source;
+    }
+}
+

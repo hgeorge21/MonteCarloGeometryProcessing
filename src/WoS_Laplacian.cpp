@@ -3,7 +3,6 @@
 #include <interpolate.h>
 
 #include <igl/AABB.h>
-#include <numeric>
 
 void WoS_Laplacian(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen::VectorXd& B,
 	const Eigen::MatrixXd& P, Eigen::VectorXd& U) 
@@ -14,7 +13,9 @@ void WoS_Laplacian(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eig
 	const int max_itr = 5;
 	const int n_walks = 64;
 
+    Eigen::MatrixXd X;
     Eigen::MatrixXd C;
+    Eigen::VectorXd R;
     Eigen::VectorXd D;
     Eigen::VectorXi I;
     U = Eigen::VectorXd::Zero(P.rows());
@@ -31,17 +32,13 @@ void WoS_Laplacian(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eig
 
 	// start the random walk
 	for (int i = 0; i < n_walks; i++) {
-		Eigen::MatrixXd X = P;
-		Eigen::VectorXd R = std::numeric_limits<double>::max() * Eigen::VectorXd::Ones(P.rows());
-
+		X = P;
         int itr = 0;
 		while (itr < max_itr) {
 			// find closest point on the boundary and change radius
 			aabb.squared_distance(V, F, X, D, I, C);
-            D = D.cwiseSqrt();
-			R = R.cwiseMin(D);
+            R = D.cwiseSqrt();
 			sample_on_spheres(R, X);
-
 			itr++;
 		}
 		// handle the rest of the points
