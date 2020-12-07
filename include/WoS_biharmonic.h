@@ -17,7 +17,10 @@
 void WoS_biharmonic(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& F,
-        const Eigen::VectorXd& B,
+        const Eigen::VectorXd& Bh,
+        const Eigen::VectorXd& Bg,
+        const bool &use_src_pt,
+        const Eigen::RowVector3d& source_point,
         const Eigen::MatrixXd& P,
         Eigen::VectorXd& U);
 

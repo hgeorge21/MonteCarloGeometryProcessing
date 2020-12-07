@@ -4,11 +4,10 @@
 #include <igl/colormap.h>
 
 #include <timer.h>
+#include <boundary_setup.h>
 #include <random_sampling.h>
 #include <WoS_Laplacian.h>
 #include <WoS_Poisson.h>
-#include <WoS_gradient.h>
-#include <WoS_Hessian.h>
 #include <WoS_biharmonic.h>
 
 int main(int argc, char* argv[]) {
@@ -22,7 +21,7 @@ int main(int argc, char* argv[]) {
     viewer.data().point_size = 5;
 	viewer.append_mesh();
 	const int yid = viewer.selected_data_index;
-    viewer.data().point_size = 8;
+    viewer.data().point_size = 5;
 
 	std::cout << R"(
     [space] Solves the PDE with current sampled points
@@ -30,50 +29,69 @@ int main(int argc, char* argv[]) {
     S,s     Show boundary points
     +       Double the number of sample points
     -       Halve the number of sample points
-    R,r     resets the sampled points
-    G,g     changes the pre-listed boundary conditions
+    R,r     Resets the sampled points
+    G,g     Changes the pre-listed boundary conditions
+    O,o     Changes the WoS solver (Laplacian, Poisson, biharmonic)
     )";
 	std::cout << "\n";
 
-    // sample the points
+    // source functions and point for Poisson
+	// Compute the source point, center of bounding box
+	const Eigen::Vector3d source_point = Eigen::Vector3d(0.5, 0.5, 0.5);
+    std::vector<std::function<double(const Eigen::Vector3d&)>> source_terms;
+    source_terms.emplace_back([&](const Eigen::Vector3d &x) -> double {
+        double r2 = (x - source_point).squaredNorm();
+        return 1e4 * std::pow(exp(1.0), -r2);
+    });
+    std::vector<std::string> source_strings;
+    source_strings.emplace_back("f(y) = Dirac delta");
+
+    // Configurable variables
     int n_samples = 1048576;
+    int boundary_id = 0;
+    int solver_id = 0;
     bool show_boundary = true;
+    bool use_source_pt = true;
+
+    std::vector<std::pair<std::string, std::pair<void *(*)(void *), std::vector<f_pairs>>>> solver_funcs;
+    boundary_setup(source_point, solver_funcs);
+
     double solve_time;
     Eigen::MatrixXd P;
     Eigen::VectorXd U;
-    Eigen::VectorXd B;
+    Eigen::VectorXd B = Eigen::VectorXd::Zero(V.rows());
+    Eigen::VectorXd Bh = Eigen::VectorXd::Zero(V.rows()); // for Biharmonic only
     Eigen::MatrixXd BCM;
 
-	// TODO: add a few more boundary conditions
-	int g_idx = 0;
-	std::vector<std::function<double(const Eigen::Vector3d&)>> boundary_funcs;
-    boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return 1 / (x-Eigen::Vector3d(0.5, 0.5, 0.5)).norm(); });
-    boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return x(0); });
-    boundary_funcs.emplace_back([](const Eigen::Vector3d &x) -> double { return 2 * x.norm(); });
+    // helper functions
+    const auto &set_boundary = [&]() {
+        auto &pair = solver_funcs[solver_id].second.second[boundary_id];
+        const auto &g = pair.second;
 
-    std::vector<std::string> boundary_strings;
-    boundary_strings.emplace_back("g(x) = 1 / ||x - (pt_src)||");
-    boundary_strings.emplace_back("g(x) = x_0");
-    boundary_strings.emplace_back("g(x) = 2 * ||x||");
-
-    // source functions for Poisson
-    std::vector<std::function<double(const Eigen::Vector3d&)>> source_terms;
-    source_terms.emplace_back([](const Eigen::Vector3d &x) -> double {
-        double r2 = (x - Eigen::Vector3d(0.5, 0.5, 0.5)).squaredNorm();
-        return 1e4 * std::pow(exp(1.0), -r2);
-    });
-
-    std::vector<std::string> source_strings;
-    source_strings.emplace_back("f(y) = Dirac delta");
-    // =====================================
-
-    const auto &set_boundary = [&](std::function<double(const Eigen::Vector3d&)> g) {
-        B.resize(V.rows());
-        for (int i = 0; i < V.rows(); i++) {
-            B(i) = g(V.row(i));
+        if(solver_funcs[solver_id].first == "biharmonic") {
+            auto &pair2 = solver_funcs[solver_id].second.second[boundary_id+1];
+            const auto &h = pair2.second;
+            for (int i = 0; i < V.rows(); i++) {
+                B(i) = g(V.row(i).transpose());
+                Bh(i) = h(V.row(i).transpose());
+            }
+            std::cout << "Boundary condition:\n\t" << pair.first << "\n\t" << pair2.first << "\n";
+        } else {
+            for (int i = 0; i < V.rows(); i++)
+                B(i) = g(V.row(i).transpose());
+            std::cout << "Boundary condition: " << pair.first << "\n";
         }
+
         igl::colormap(igl::COLOR_MAP_TYPE_MAGMA, V, B.minCoeff(), B.maxCoeff(), BCM);
         viewer.data_list[yid].set_points(V, BCM);
+    };
+
+    const auto& show_bndry_pts = [&]()
+    {
+        if (show_boundary)
+            viewer.data_list[yid].set_points(V, BCM);
+        else
+            viewer.data_list[yid].clear_points();
     };
 
 	const auto& set_points = [&]()
@@ -82,29 +100,25 @@ int main(int argc, char* argv[]) {
         const Eigen::RowVector3d orange(1.0, 0.7, 0.2);
         viewer.data_list[xid].set_points(P, (1. - (1. - orange.array()) * .8));
 	};
-	const auto& show_bndry_pts = [&]()
-    {
-        if (show_boundary)
-            viewer.data_list[yid].set_points(V, BCM);
-        else
-            viewer.data_list[yid].clear_points();
-    };
 
 	const auto& solve = [&]()
 	{
-//		WoS_Laplacian(V, F, B, P, U);
-		WoS_Poisson(V, F, B, source_terms[0], P, U);
-        WoS_biharmonic(V, F, B, source_terms[0], P, U);
-
+	    auto &pair = solver_funcs[solver_id];
+	    if(pair.first == "Laplacian") {
+            WoS_Laplacian(V, F, B, P, U);
+	    } else if(pair.first == "Poisson") {
+            WoS_Poisson(V, F, B, source_terms[0], use_source_pt, source_point, P, U);
+	    } else if(pair.first == "biharmonic") {
+            WoS_biharmonic(V, F, B, Bh, use_source_pt, source_point, P, U);
+	    }
 
 		Eigen::MatrixXd CM;
 		igl::colormap(igl::COLOR_MAP_TYPE_MAGMA, U, U.minCoeff(), U.maxCoeff(), CM);
 		viewer.data_list[xid].set_points(P, CM);
 	};
 
-    const auto update = [&]() {
-        show_bndry_pts();
-    };
+	// updates
+    const auto update = [&]() { show_bndry_pts(); };
 
 	viewer.callback_key_pressed = [&](igl::opengl::glfw::Viewer&, unsigned int key, int mod)
 	{
@@ -135,14 +149,25 @@ int main(int argc, char* argv[]) {
 			break;
         case 'G':
         case 'g':
-            g_idx = (g_idx + 1) % boundary_funcs.size();
-            set_boundary(boundary_funcs[g_idx]);
-            std::cout << "Boundary condition: " << boundary_strings[g_idx] << "\n";
+            boundary_id = (boundary_id + 1) % solver_funcs[solver_id].second.second.size();
+            set_boundary();
             break;
+        case 'O':
+        case 'o':
+            solver_id = (solver_id + 1) % solver_funcs.size();
+            std::cout << "Changed to solver: " << solver_funcs[solver_id].first << "\n";
+            if(solver_funcs[solver_id].first != "Laplacian" && use_source_pt)
+                std::cout << "Source point: " << source_point.transpose() << "\n";
+            boundary_id = 0;
+            set_boundary();
 		case 'R':
 		case 'r':
 			set_points();
 			break;
+        case 'Q':
+        case 'q':
+            use_source_pt = !use_source_pt;
+            std::cout << (use_source_pt ? "Enabled " : "Disabled ") << "source point\n";
 		default:
 			return false;
 		}
@@ -151,8 +176,8 @@ int main(int argc, char* argv[]) {
 	};
 
 	viewer.data().set_mesh(V, F);
-    set_boundary(boundary_funcs[g_idx]);
-    std::cout << "Boundary condition: " << boundary_strings[g_idx] << "\n";
+    std::cout << "Changed to solver: " << solver_funcs[solver_id].first << "\n";
+    set_boundary();
 	set_points();
     std::cout << "# Sample points: " << P.rows() << "\n";
 

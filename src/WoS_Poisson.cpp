@@ -8,6 +8,7 @@
 
 void WoS_Poisson(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen::VectorXd& B,
                  std::function<double(const Eigen::Vector3d &)> f,
+                 const bool &use_src_pt, const Eigen::RowVector3d& source_point,
                  const Eigen::MatrixXd& P, Eigen::VectorXd& U) {
     igl::AABB<Eigen::MatrixXd, 3> aabb;
     aabb.init(V, F);
@@ -48,7 +49,10 @@ void WoS_Poisson(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F, const Eigen
             aabb.squared_distance(V, F, X, D, I, C);
             R = D.cwiseSqrt();
 
-            sample_in_spheres(X, R, Eigen::RowVector3d(0.5, 0.5, 0.5), Y);
+            if(use_src_pt)
+                sample_in_spheres(X, R, source_point, Y);
+            else
+                sample_in_spheres(X, R, Y);
             vols = R.unaryExpr([](double r)->double{ return 4.*PI/3*pow(r, 3); });
             Greens_function(X, Y, R, 0, HARMONIC, G);
 

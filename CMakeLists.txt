@@ -16,6 +16,7 @@ find_package(LIBIGL REQUIRED QUIET)
 set(EIGENROOT "${PROJECT_SOURCE_DIR}/libigl/external/eigen")
 include_directories("${EIGENROOT}")
 
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include/")
 file(GLOB SRCFILES src/*.cpp)
 
