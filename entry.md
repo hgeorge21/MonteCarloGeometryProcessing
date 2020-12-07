@@ -37,8 +37,7 @@ We keep taking point on the sphere until we are very close to the boundary and w
 
 If do multiple (N) walks and average over the results, we can get our final Monte Carlo estimatation:
 
-![mceq](/images/avgWos.png)
-
+![mceq](/images/avgWos.PNG)
 ### Key Steps
 
 #### Random Sampling Inside Mesh
