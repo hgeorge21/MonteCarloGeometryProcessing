@@ -50,7 +50,7 @@ First, we find the bounding box of the mesh object by taking the colwise maximum
 
 We generates a list of random query points (*Q*) inside the bounding box , and then we discard all points outside the query model.
 
-<img src="\images\bounding_points.png" width=500> 
+<img src="/images/bounding_points.png" width=500> 
 
 This can be done using fast winding numbers for triangle soups. As libigl tutorial instructed, it can be done as follows:
 
@@ -130,7 +130,7 @@ We will do a total of *n_walks* , accumulates the estimated values in **U** for 
 
 Below is the visualization of the values stored in **U**. This visualization used around 270k sample points inside the bunny mesh.
 
-<img src="\images\270k_result.png">
+<img src="/images/270k_result.png">
 
 Here is a snippet of code of how to use libigl's colormap.
 
@@ -148,7 +148,7 @@ Beyond WoS estimator for Laplace equation as required, we tried to implement WoS
 
 The Poisson equation is very similar to Laplacian :
 
-<img src="\images\render_pos.png">
+<img src="/images/render_pos.png">
 
 where Omega is just domain of interest.
 
@@ -201,7 +201,7 @@ while (!end_condition) {
 
 According to the paper, we can rewarite the standard Biharmonic Equation to:
 
-<img src="\images\bihar.png">
+<img src="/images/bihar.png">
 
 Then the WoS estimator of this becomes simple. 
 We can use our Poisson estimator described from previous section, and the Laplace estimator to estimate *v(x_k)* at each iteration of the walk.
