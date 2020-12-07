@@ -33,7 +33,7 @@ From here, we can develop the algorithm of Walk On Sphere (WoS). Below is the eq
 ![lapesti](/images/lapesti.png)
 
 We keep taking point on the sphere until we are very close to the boundary and we can take the boundary value. As the illustration (taken from the paper) below.
-<img src="images/wos_algo.png" width="300">
+<img src="/images/wos_algo.png" width="400">
 
 If do multiple (N) walks and average over the results, we can get our final Monte Carlo estimatation:
 
@@ -50,7 +50,7 @@ First, we find the bounding box of the mesh object by taking the colwise maximum
 
 We generates a list of random query points (*Q*) inside the bounding box , and then we discard all points outside the query model.
 
-<img src="/images/bounding_points.png" width=500> 
+<img src="/images/bounding_points.PNG" width=500> 
 
 This can be done using fast winding numbers for triangle soups. As libigl tutorial instructed, it can be done as follows:
 
@@ -130,7 +130,7 @@ We will do a total of *n_walks* , accumulates the estimated values in **U** for 
 
 Below is the visualization of the values stored in **U**. This visualization used around 270k sample points inside the bunny mesh.
 
-<img src="/images/270k_result.png" width=300>
+<img src="/images/270k_result.png" width=500>
 
 Here is a snippet of code of how to use libigl's colormap.
 
