@@ -136,9 +136,9 @@ Below is the visualization of the values stored in **U**. This visualization use
 
 The first one has boundary condition of *1/||x||* and the second has boundary condition equals to *x_0*.
 
-<img src="/images/Laplacian_bunny.png.png" width=500>
+<img src="/images/Laplacian_bunny.png" width=500>
 
-<img src="/images/Laplacian_bunny2.png.png" width=500>
+<img src="/images/Laplacian_bunny2.png" width=500>
 
 Here is a snippet of code of how to use libigl's colormap.
 
