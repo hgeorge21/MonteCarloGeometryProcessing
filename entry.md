@@ -5,6 +5,10 @@ by Wenjie Lu, Yongzhen Huang
 Ideas and Implementation are all based on:
 ["Monte Carlo Geometry Processing: A Grid-Free Approach to PDE-Based Methods on Volumetric Domains"](https://www.cs.cmu.edu/~kmcrane/Projects/MonteCarloGeometryProcessing/paper.pdf)
 
+Here is a visualization of Laplace equation with boundary condition *1/||x||*.
+
+<img src="/images/cactus_evolution.png" width=700>
+
 #### Walk on Sphere
 
 Recall the Laplace Equation on domain *S*:
@@ -137,10 +141,7 @@ Here is a snippet of code of how to use libigl's colormap.
 ```C++
 Eigen::MatrixXd CM;
 igl::colormap(igl::COLOR_MAP_TYPE_MAGMA, U, U.minCoeff(), U.maxCoeff(), CM);
-```
-Here is another visualization.
-Laplace equation with boundary condition *1/||x||*.
-<img src="/images/cactus_evolution.png" width=700> 
+``` 
 
 ### Further Exploration
 
@@ -231,4 +232,4 @@ if((point_source - x).norm() < r) {
 
 The following figure illustrates the difference of using point source on Poisson equation with boundary condition *1 / ||x-point_source||*.
 
-<img src="/images/pointSourceComp.png" width=500> 
+<img src="/images/pointSouceComp.png" width=500> 
