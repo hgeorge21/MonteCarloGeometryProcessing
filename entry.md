@@ -5,6 +5,9 @@ by Wenjie Lu, Yongzhen Huang
 Ideas and Implementation are all based on:
 ["Monte Carlo Geometry Processing: A Grid-Free Approach to PDE-Based Methods on Volumetric Domains"](https://www.cs.cmu.edu/~kmcrane/Projects/MonteCarloGeometryProcessing/paper.pdf)
 
+Laplace equation with boundary condition *1/||x||*.
+<img src="/images/cactus_evolation" width=700> 
+
 #### Walk on Sphere
 
 Recall the Laplace Equation on domain *S*:
@@ -75,7 +78,7 @@ X = P
 while (!end_condition){
     aabb.squared_distance(V, F, X, D, I, C);
     R = D.cwiseSqrt();
-    // update X here....
+    // update X to surface of biggest sphere in mesh....
 }
 ```
 **D** will be the output contains squared distance for each point in **X** to the closest point stored in **C** (lies on **F** given by **I**). 
@@ -197,6 +200,12 @@ while (!end_condition) {
 // ... same as laplacian, use I, C, F to interpolate and add value to U
 ```
 
+
+A modification to Poisson is screened Poisson which involves subtracting *cu* (*c* > 0) from the Laplacian term.
+The implementation is very similar to regular Poisson with harmonic Green's changed to [Yukawa Potential](https://en.wikipedia.org/wiki/Yukawa_potential) 
+and a normalization term for *u(x_{k+1})* which can be found in the appendix of the paper.
+
+
 #### WoS for Biharmonic Equation
 
 According to the paper, we can rewarite the standard Biharmonic Equation to:
@@ -204,5 +213,23 @@ According to the paper, we can rewarite the standard Biharmonic Equation to:
 <img src="/images/bihar.png">
 
 Then the WoS estimator of this becomes simple. 
-We can use our Poisson estimator described from previous section, and the Laplace estimator to estimate *v(x_k)* at each iteration of the walk.
+We can use our Poisson estimator described from previous section, and the Laplace estimator to estimate *v(x_k)* at each iteration of the walk. This simple nested is in the order of *O(SN^2)* where 
+*S* is complexity for each walk and *N* is the number of walks needed for each estimator. We can reduce this by performing a tree walk.
 
+The idea is we walk from *x_0* to *x_k* at the boundary and for each *y_i*, we can extend the path from *y_i* to *x_k*. This leads to a complexity to *O(SN)*. Nested version is implemented with only 1 walk in *y*.
+
+#### Importance Sampling
+
+In Poisson and biharmonic, we have source term (implemented as Dirac delta function). In this implementation, we use point source and leverage
+importance sampling since it would be unlikely for us to be able to sample the point source.
+
+```c++
+y = sample_from_sphere(x, r);
+if((point_source - x).norm() < r) {
+    y = point_source;
+}
+```
+
+The following figure illustrates the difference of using point source on Poisson equation with boundary condition *1 / ||x-point_source||*.
+
+<img src="/images/pointSourceComp.png" width=500> 
