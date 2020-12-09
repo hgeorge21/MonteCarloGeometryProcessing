@@ -6,7 +6,7 @@ Ideas and Implementation are all based on:
 ["Monte Carlo Geometry Processing: A Grid-Free Approach to PDE-Based Methods on Volumetric Domains"](https://www.cs.cmu.edu/~kmcrane/Projects/MonteCarloGeometryProcessing/paper.pdf)
 
 Laplace equation with boundary condition *1/||x||*.
-<img src="/images/cactus_evolation" width=700> 
+<img src="/images/cactus_evolation.png" width=700> 
 
 #### Walk on Sphere
 
