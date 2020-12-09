@@ -234,6 +234,7 @@ if((point_source - x).norm() < r) {
 }
 ```
 
-The following figure illustrates the difference of using point source on Poisson equation with boundary condition *1 / ||x-point_source||*.
+The following figure illustrates the difference of using point source (left) on Poisson equation with boundary condition *1 / ||x-point_source||*.
 
 <img src="/images/pointSouceComp.png" width=500> 
+
