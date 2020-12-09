@@ -134,7 +134,11 @@ We will do a total of *n_walks* , accumulates the estimated values in **U** for 
 
 Below is the visualization of the values stored in **U**. This visualization used around 270k sample points inside the bunny mesh.
 
-<img src="/images/270k_result.png" width=500>
+The first one has boundary condition of *1/||x||* and the second has boundary condition equals to *x_0*.
+
+<img src="/images/Laplacian_bunny.png.png" width=500>
+
+<img src="/images/Laplacian_bunny2.png.png" width=500>
 
 Here is a snippet of code of how to use libigl's colormap.
 
